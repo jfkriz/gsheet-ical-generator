@@ -58,22 +58,36 @@ export class GSheetReader {
                 .filter(row => { return row[6] && (!row[8] || row[8].toLowerCase().replace(' ', '') != 'nopractice') })
                 .map(row => {
                     logger.debug(`${row.join(",")}`);
-                    let date = moment(row[process.env.DATE_COLUMN]);
+
+                    // Get the start date of the event - may or may not have time, moment will handle this
+                    let date = moment(row[process.env.DATE_COLUMN], ['ddd, MM/DD/YYYY, hh:mmA']);
                     logger.debug(`Start date: ${date}`);
+                    
+                    // Determine if the date is a weekend or not
                     const day = date.format('dddd').toLowerCase();
                     const weekend = day == 'saturday' || day == 'sunday';
-                    const time = weekend ? 
+
+                    // Set the time if not specified in the sheet data
+                    if (date.hour() === 0 && date.minute() === 0 && date.second() === 0) {
+                        logger.debug(`No time specified on ${date}, setting defaults`);
+                        const time = weekend ? 
                         moment(process.env.WEEKEND_PICKUP_TIME, ['h:m a', 'H:m']) : moment(process.env.WEEKDAY_PICKUP_TIME, ['h:m a', 'H:m']);
-                    logger.debug(`Pickup time: ${time}`);
-                    date = date.set({hour: time.get('hour'), minute: time.get('minute')});
-                    logger.debug(`Start date w/time: ${date}`);
+                        logger.debug(`Pickup time: ${time}`);
+                        date = date.set({hour: time.get('hour'), minute: time.get('minute')});
+                        logger.debug(`Start date w/time: ${date}`);
+                    }
+
+                    // Set the location on weekdays vs weekend
                     const location = weekend ?
                         process.env.WEEKEND_PICKUP_LOCATION : process.env.WEEKDAY_PICKUP_LOCATION;
                     logger.debug(`Location: ${location}`);
+
                     const driver = row[process.env.DRIVER_COLUMN] || 'NO DRIVER';
                     const numRiders = row[process.env.NUM_RIDERS_COLUMN];
                     const notes = row[process.env.NOTES_COLUMN] || null;
                     const eventId = date.format('YYYYMMDDHHmmss');
+
+                    // Get an array of all the riders
                     const riders = row.slice(
                             Number.parseInt(process.env.FIRST_RIDER_COLUMN), 
                             Number.parseInt(process.env.RIDER_COUNT) + 1
