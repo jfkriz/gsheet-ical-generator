@@ -22,7 +22,7 @@ export class GSheetReader {
         });
     }
 
-    async readEventsFromSheet(): Promise<Array<ICalEventData>> {
+    async readEventsFromSheet(driverFilter?: string): Promise<Array<ICalEventData>> {
         if (this.authClient == null) {
             logger.debug('Getting authClient for sheets');
             this.authClient = await this.auth.getClient();
@@ -47,6 +47,17 @@ export class GSheetReader {
             logger.error(`Error reading range from sheet. Error ${res.status}: ${res.statusText}`);
             throw (res.statusText);
         }
+
+        let spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${process.env.GSHEETS_SHEET_ID}/edit`
+        const sheet = await this.client.spreadsheets.get({
+            auth: this.authClient,
+            spreadsheetId: process.env.GSHEETS_SHEET_ID
+        });
+        if (sheet.status == 200) {
+            logger.debug('Setting spreadsheet URL from sheet data');
+            spreadsheetUrl = sheet.data.spreadsheetUrl || spreadsheetUrl;
+        }
+        logger.debug(`Spreadsheet URL: ${sheet.data.spreadsheetUrl}`);
 
         const rows = res.data.values;
         if (rows.length === 0) {
@@ -101,11 +112,15 @@ export class GSheetReader {
 
                     return {
                         summary: `${driver}: Cross Country Pickup`,
-                        description: `Pick up ${numRiders} boys from Cross Country.\nBoys at practice today:\n${riders}\n${notes != null ? "\nNote: " + notes : ""}`,
+                        description: `Pick up ${numRiders} boys from Cross Country.\nBoys at practice today:\n${riders}\n${notes != null ? "\nNote: " + notes : ""}\nSpreadsheet Source: ${spreadsheetUrl}`,
                         start: date,
                         id: eventId,
                         location: location
                     } as ICalEventData;
+                }).filter(event => {
+                    // If we have a driverFilter, only return events for that driver
+                    return !driverFilter 
+                        || event.summary.split(':', 2)[0].toLowerCase().indexOf(driverFilter.toLowerCase()) >= 0;
                 });
         }
     }
