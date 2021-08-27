@@ -53,7 +53,8 @@ export class GSheetReader {
             logger.warn('No rows read from sheet');
             return new Array<ICalEventData>();
         } else {
-            return rows
+            const riderNames = rows[0].slice(Number.parseInt(process.env.FIRST_RIDER_COLUMN), Number.parseInt(process.env.RIDER_COUNT) + 1);
+            return rows.slice(1)
                 .filter(row => { return row[6] && (!row[8] || row[8].toLowerCase().replace(' ', '') != 'nopractice') })
                 .map(row => {
                     logger.debug(`${row.join(",")}`);
@@ -70,13 +71,23 @@ export class GSheetReader {
                         process.env.WEEKEND_PICKUP_LOCATION : process.env.WEEKDAY_PICKUP_LOCATION;
                     logger.debug(`Location: ${location}`);
                     const driver = row[process.env.DRIVER_COLUMN] || 'NO DRIVER';
-                    const riders = row[process.env.NUM_RIDERS_COLUMN];
+                    const numRiders = row[process.env.NUM_RIDERS_COLUMN];
                     const notes = row[process.env.NOTES_COLUMN] || null;
                     const eventId = date.format('YYYYMMDDHHmmss');
+                    const riders = row.slice(
+                            Number.parseInt(process.env.FIRST_RIDER_COLUMN), 
+                            Number.parseInt(process.env.RIDER_COUNT) + 1
+                        ).map((rider, ix) => {
+                            if (rider && rider == 1) {
+                                return riderNames[ix];
+                            } else {
+                                return '';
+                            }
+                        }).filter(rider => { return rider != '';}).join('\n');
 
                     return {
                         summary: `${driver}: Cross Country Pickup`,
-                        description: `Pick up ${riders} boys from Cross Country.${notes != null ? "\nNote: " + notes : ""}`,
+                        description: `Pick up ${numRiders} boys from Cross Country.\nBoys at practice today:\n${riders}\n${notes != null ? "\nNote: " + notes : ""}`,
                         start: date,
                         id: eventId,
                         location: location
