@@ -1,0 +1,49 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Build and Deploy Docker Image
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=currentDate::$(TZ=':America/New_York' date +'%Y-%m-%d_%H-%M-%S')"
+        
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm i
+      - run: npm run build --if-present
+      #- run: npm run ci-test
+        
+      - name: Build and push Docker images
+        if: startsWith(github.ref, 'refs/heads/main')
+        uses: docker/build-push-action@v1.1.0
+        with:
+          # Username used to log in to a Docker registry. If not set then no login will occur
+          username: ${{ secrets.DOCKER_USERNAME }}
+          # Password or personal access token used to log in to a Docker registry. If not set then no login will occur
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          # Docker repository to tag the image with
+          repository: jfkriz3/gsheet-ical-generator
+          # Tag with current date
+          tags: ${{ steps.date.outputs.currentDate }}
+          # Automatically tags the built image with the git reference as per the readme
+          tag_with_ref: true
+          push: ${{ startsWith(github.ref, 'refs/heads/main') }}
+
