@@ -18,7 +18,7 @@ export class GsheetIcsHandler {
             .status(200)
             .contentType('text/calendar')
             .header('Content-Disposition', 'attachment;filename=stx-calendar.ics')
-            .send(await new IcalGenerator().generate(driverFilter));
+            .send(await new IcalGenerator().generate(req.headers["user-agent"], driverFilter));
         next();
     }
 }

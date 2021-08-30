@@ -22,7 +22,7 @@ export class GSheetReader {
         });
     }
 
-    async readEventsFromSheet(driverFilter?: string): Promise<Array<ICalEventData>> {
+    async readEventsFromSheet(userAgent?: string, driverFilter?: string): Promise<Array<ICalEventData>> {
         if (this.authClient == null) {
             logger.debug('Getting authClient for sheets');
             this.authClient = await this.auth.getClient();
@@ -95,7 +95,7 @@ export class GSheetReader {
 
                     const driver = row[process.env.DRIVER_COLUMN] || 'NO DRIVER';
                     const numRiders = row[process.env.NUM_RIDERS_COLUMN];
-                    const notes = row[process.env.NOTES_COLUMN] || null;
+                    const notes = row[process.env.NOTES_COLUMN] || undefined;
                     const eventId = date.format('YYYYMMDDHHmmss');
 
                     // Get an array of all the riders
@@ -110,26 +110,39 @@ export class GSheetReader {
                             }
                         }).filter(rider => { return rider != '';});
 
-                    let description = `<p>Pick up ${numRiders} boys from Cross Country.</p>`
+                    let description = `Pick up ${numRiders} boys from Cross Country.\n\n`
+                        + `Boys at practice today:\n`
+                        + riders.join("\n");
+
+                    let altDescription = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">`
+                        + `<HTML><HEAD><TITLE></TITLE></HEAD><BODY>`
+                        + `<p>Pick up ${numRiders} boys from Cross Country.</p>`
                         + `<p>Boys at practice today:`
                         + `<ul>`
                         + riders.map(n => { return `<li>${n}</li>`; }).join("")
                         + `</ul>`
                         + `</p>`;
 
-                    if (notes) {
-                        description = `${description}`
-                            + `<p><b>Note:</b>${notes}</p>`
+                    if (notes && notes !== null && notes !== undefined) {
+                        logger.debug(`Notes: ${notes}`);
+                        description = description
+                            + `\n\nNote: ${notes}`;
+                        altDescription = `${altDescription}`
+                            + `<p><b>Note:</b>${notes.replace(/\n/g, "<br>")}</p>`;
                     }
 
-                    description = `${description}<p><a href="${spreadsheetUrl}" target="_blank" title="${spreadsheetUrl}">Spreadsheet Link</a></p>`;
+                    description = `${description}\n\nSpreadsheet Source: ${spreadsheetUrl}`;
+                    altDescription = `${altDescription}<p><a href="${spreadsheetUrl}" target="_blank" title="${spreadsheetUrl}">Spreadsheet Link</a></p></BODY></HTML>`;
 
                     return {
                         summary: `${driver}: Cross Country Pickup`,
-                        description: description,
+                        description: userAgent == "Google-Calendar-Importer" ? altDescription : description,
                         start: date,
                         id: eventId,
-                        location: location
+                        location: location,
+                        x: {
+                            'X-ALT-DESC;FMTTYPE=text/html': altDescription
+                        }
                     } as ICalEventData;
                 }).filter(event => {
                     // If we have a driverFilter, only return events for that driver
