@@ -48,7 +48,13 @@ feed by hitting http://localhost:3000. You can alter the port that this listens 
 
 ## Usage
 The end-user usage is very simple. You will be able to subscribe to the calendar with any tool that supports iCal feeds.
-The URL to the calendar will depend on how you deploy and expose this application. This NodeJS app listens on http://localhost:3000/,
+The URL to the calendar will depend on how you deploy and expose this application. Also, the user can optionally filter the feed 
+to just receive events they are assigned as a driver on. This can be done by adding `?driver=drivername` to the end of the 
+feed URL. This will do a case-insensitive match on the Driver column in the data range, and will match on substrings as well.
+So assuming a driver "Joe Smith" and another "Jane Smith", you can specify `?driver=smith` to have events for both Joe and Jane
+synced to your calendar, or `?driver=jane%20smith` to see events only for Jane.
+
+This NodeJS app listens on http://localhost:3000/,
 but it might be a good idea to have this app fronted by some other server/proxy with a more specific URL, or simply change the
 `app.get` line that registers the handler, to listen on a different endpoint.
 By default, it is:
