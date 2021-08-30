@@ -13,6 +13,7 @@ export class IcalGenerator {
             name: 'America/New_York',
             generator: getVtimezoneComponent
         });
+        cal.ttl(60 * 60);
         
         const events = await new GSheetReader().readEventsFromSheet(userAgent, driverFilter);
         events.forEach(event => cal.createEvent(event));
