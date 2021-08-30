@@ -66,7 +66,7 @@ export class GSheetReader {
         } else {
             const riderNames = rows[0].slice(Number.parseInt(process.env.FIRST_RIDER_COLUMN), Number.parseInt(process.env.RIDER_COUNT) + 1);
             return rows.slice(1)
-                .filter(row => { return row[6] && (!row[8] || row[8].toLowerCase().replace(' ', '') != 'nopractice') })
+                .filter(row => { return row[6] && (!row[8] || !row[8].toLowerCase().replace(' ', '').includes('nopractice')) })
                 .map(row => {
                     logger.debug(`${row.join(",")}`);
 
@@ -108,11 +108,25 @@ export class GSheetReader {
                             } else {
                                 return '';
                             }
-                        }).filter(rider => { return rider != '';}).join('\n');
+                        }).filter(rider => { return rider != '';});
+
+                    let description = `<p>Pick up ${numRiders} boys from Cross Country.</p>`
+                        + `<p>Boys at practice today:`
+                        + `<ul>`
+                        + riders.map(n => { return `<li>${n}</li>`; }).join("")
+                        + `</ul>`
+                        + `</p>`;
+
+                    if (notes) {
+                        description = `${description}`
+                            + `<p><b>Note:</b>${notes}</p>`
+                    }
+
+                    description = `${description}<p><a href="${spreadsheetUrl}" target="_blank" title="${spreadsheetUrl}">Spreadsheet Link</a></p>`;
 
                     return {
                         summary: `${driver}: Cross Country Pickup`,
-                        description: `Pick up ${numRiders} boys from Cross Country.\nBoys at practice today:\n${riders}\n${notes != null ? "\nNote: " + notes : ""}\nSpreadsheet Source: ${spreadsheetUrl}`,
+                        description: description,
                         start: date,
                         id: eventId,
                         location: location
