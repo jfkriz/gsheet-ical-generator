@@ -128,7 +128,7 @@ export class GSheetReader {
                         description = description
                             + `\n\nNote: ${notes}`;
                         altDescription = `${altDescription}`
-                            + `<p><b>Note:</b>${notes.replace(/\n/g, "<br>")}</p>`;
+                            + `<p><b>Note:</b> ${notes.replace(/\n/g, "<br>")}</p>`;
                     }
 
                     description = `${description}\n\nSpreadsheet Source: ${spreadsheetUrl}`;
