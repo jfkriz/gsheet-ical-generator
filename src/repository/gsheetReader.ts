@@ -64,9 +64,18 @@ export class GSheetReader {
             logger.warn('No rows read from sheet');
             return new Array<ICalEventData>();
         } else {
-            const riderNames = rows[0].slice(Number.parseInt(process.env.FIRST_RIDER_COLUMN), Number.parseInt(process.env.RIDER_COUNT) + 1);
+            const riderStartColumn = Number.parseInt(process.env.FIRST_RIDER_COLUMN);
+            const riderEndColumn = riderStartColumn + Number.parseInt(process.env.RIDER_COUNT);
+            const riderNames = rows[0].slice(riderStartColumn, riderEndColumn);
+            logger.debug(`Riders: ${riderNames.join(",")}`);
             return rows.slice(1)
-                .filter(row => { return row[6] && (!row[8] || !row[8].toLowerCase().replace(' ', '').includes('nopractice')) })
+                .filter(row => {
+                    let numRiders = row[process.env.NUM_RIDERS_COLUMN] ? row[process.env.NUM_RIDERS_COLUMN] : 0;
+                    let notes = row[process.env.NOTES_COLUMN] ? row[process.env.NOTES_COLUMN].toLowerCase().replace(' ', '') : '';
+                    return numRiders 
+                        && numRiders > 0 
+                        && (!notes.includes('noschool') || !notes.includes('noclasses') || !notes.includes('weekend') || !notes.includes('break')); 
+                })
                 .map(row => {
                     logger.debug(`${row.join(",")}`);
 
@@ -78,15 +87,16 @@ export class GSheetReader {
                     const day = date.format('dddd').toLowerCase();
                     const weekend = day == 'saturday' || day == 'sunday';
 
-                    // Set the time if not specified in the sheet data
-                    if (date.hour() === 0 && date.minute() === 0 && date.second() === 0) {
-                        logger.debug(`No time specified on ${date}, setting defaults`);
-                        const time = weekend ? 
-                        moment(process.env.WEEKEND_PICKUP_TIME, ['h:m a', 'H:m']) : moment(process.env.WEEKDAY_PICKUP_TIME, ['h:m a', 'H:m']);
-                        logger.debug(`Pickup time: ${time}`);
-                        date = date.set({hour: time.get('hour'), minute: time.get('minute')});
-                        logger.debug(`Start date w/time: ${date}`);
+                    let time = moment(row[process.env.TIME_COLUMN], 'hh:mmA');
+                    logger.debug(`Pickup time: ${time}`);
+                    // This is after-school pickup - clean up bad data in the spreadsheet to make the pickup time PM)
+                    if(time.get('hour') < 12) {
+                        time = time.set({hour: time.get('hour') + 12});
+                        logger.debug(`Added 12 hours to pickup time: ${time}`)
                     }
+
+                    // Set the time on the date, since they are separate columns now
+                    date = date.set({hour: time.get('hour'), minute: time.get('minute')});
 
                     // Set the location on weekdays vs weekend
                     const location = weekend ?
@@ -100,8 +110,8 @@ export class GSheetReader {
 
                     // Get an array of all the riders
                     const riders = row.slice(
-                            Number.parseInt(process.env.FIRST_RIDER_COLUMN), 
-                            Number.parseInt(process.env.RIDER_COUNT) + 1
+                            riderStartColumn, 
+                            riderEndColumn
                         ).map((rider, ix) => {
                             if (rider && rider == 1) {
                                 return riderNames[ix];
@@ -110,14 +120,14 @@ export class GSheetReader {
                             }
                         }).filter(rider => { return rider != '';});
 
-                    let description = `Pick up ${numRiders} boys from Cross Country.\n\n`
-                        + `Boys at practice today:\n`
+                    let description = `Pick up ${numRiders} boys from St Xavier.\n\n`
+                        + `Boys riding today:\n`
                         + riders.join("\n");
 
                     let altDescription = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">`
                         + `<HTML><HEAD><TITLE></TITLE></HEAD><BODY>`
-                        + `<p>Pick up ${numRiders} boys from Cross Country.</p>`
-                        + `<p>Boys at practice today:`
+                        + `<p>Pick up ${numRiders} boys from St. Xavier.</p>`
+                        + `<p>Boys riding today:`
                         + `<ul>`
                         + riders.map(n => { return `<li>${n}</li>`; }).join("")
                         + `</ul>`
@@ -125,17 +135,15 @@ export class GSheetReader {
 
                     if (notes && notes !== null && notes !== undefined) {
                         logger.debug(`Notes: ${notes}`);
-                        description = description
-                            + `\n\nNote: ${notes}`;
-                        altDescription = `${altDescription}`
-                            + `<p><b>Note:</b> ${notes.replace(/\n/g, "<br>")}</p>`;
+                        description = `${description}\n\nNote: ${notes}`;
+                        altDescription = `${altDescription}<p><b>Note:</b> ${notes.replace(/\n/g, "<br>")}</p>`;
                     }
 
                     description = `${description}\n\nSpreadsheet Source: ${spreadsheetUrl}`;
                     altDescription = `${altDescription}<p><a href="${spreadsheetUrl}" target="_blank" title="${spreadsheetUrl}">Spreadsheet Link</a></p></BODY></HTML>`;
 
                     return {
-                        summary: `${driver}: Cross Country Pickup`,
+                        summary: `${driver}: St. Xavier Carpool Pickup`,
                         description: userAgent == "Google-Calendar-Importer" ? altDescription : description,
                         start: date,
                         id: eventId,

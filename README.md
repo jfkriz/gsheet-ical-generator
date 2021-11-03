@@ -32,6 +32,7 @@ The environment variables needed are as follows:
 |`GSHEETS_SHEET_ID`|The ID of the Google Sheet|Can be found by viewing the sheet, and looking for the value between `/d/` and `/edit` in the URL - for instance, https://docs.google.com/spreadsheets/d/abc123/edit, the ID would be abc123|
 |`GSHEETS_DATA_RANGE`|The range of cells where the events are listed, with columns as mentioned above, specified in typical range format (for example, `Carpool!A18:I200`, to choose cells `A18` through `I200` on the `Carpool` sheet)|The first line in the range should be column headers, with the individual rider names listed, one per column.|
 |`DATE_COLUMN`|The column number (0-based) in the range where the event date is found||
+|`TIME_COLUMN`|The column number (0-based) in the range where the event time is found||
 |`NUM_RIDERS_COLUMN`|The column number (0-based) in the range, where the total number of riders for the day is found.||
 |`FIRST_RIDER_COLUMN`|The column number (0-based) in the range, where the first rider is found.||
 |`RIDER_COUNT`|The total number of possible riders.|Note that this is not the number of riders for a given event. This is used to determine how many columns to use when looking for riders - so this implies that the rider columns must be next to each other, with no other data in between.|
