@@ -5,8 +5,8 @@ import {getVtimezoneComponent} from '@touch4it/ical-timezones';
 export class IcalGenerator {
     async generate(userAgent?: string, driverFilter?: string): Promise<string> {
         let cal = new ICalCalendar();
-        cal.name('St. Xavier Afternoon Carpool 2021-2022');
-        cal.description('St. Xavier Afternoon Carpool 2021-2022 - Riders and Drivers');
+        cal.name('St. Xavier Cross Country Carpool 2022-2023');
+        cal.description('St. Xavier Cross Country Carpool 2022-2023 - Riders and Drivers');
         cal.scale('GREGORIAN');
         cal.method(ICalCalendarMethod.PUBLISH);
         cal.timezone({
