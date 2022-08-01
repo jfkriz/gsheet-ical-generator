@@ -22,4 +22,5 @@ function closeItUp() {
     server.close(() => {
       logger.info('Http server closed.');
     });
+    process.exit(0);
 }

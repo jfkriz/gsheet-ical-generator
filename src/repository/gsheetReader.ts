@@ -89,17 +89,17 @@ export class GSheetReader {
 
                     let time = moment(row[process.env.TIME_COLUMN], 'hh:mmA');
                     logger.debug(`Pickup time: ${time}`);
-                    // This is after-school pickup - clean up bad data in the spreadsheet to make the pickup time PM)
-                    if(time.get('hour') < 12) {
-                        time = time.set({hour: time.get('hour') + 12});
-                        logger.debug(`Added 12 hours to pickup time: ${time}`)
-                    }
+                    // // This is after-school pickup - clean up bad data in the spreadsheet to make the pickup time PM)
+                    // if(!weekend && time.get('hour') < 12) {
+                    //     time = time.set({hour: time.get('hour') + 12});
+                    //     logger.debug(`Added 12 hours to pickup time: ${time}`)
+                    // }
 
                     // Set the time on the date, since they are separate columns now
                     date = date.set({hour: time.get('hour'), minute: time.get('minute')});
 
                     // Set the location on weekdays vs weekend
-                    const location = weekend ?
+                    const location = row[process.env.ALTERNATE_PICKUP_ADDRESS_COLUMN] || weekend ?
                         process.env.WEEKEND_PICKUP_LOCATION : process.env.WEEKDAY_PICKUP_LOCATION;
                     logger.debug(`Location: ${location}`);
 
