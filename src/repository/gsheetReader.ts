@@ -88,7 +88,14 @@ export class GSheetReader {
                     const weekend = day == 'saturday' || day == 'sunday';
 
                     let time = moment(row[process.env.TIME_COLUMN], 'hh:mmA');
-                    logger.debug(`Pickup time: ${time}`);
+                    logger.debug(`Time in sheet: ${time}`);
+                    if (!time || !time.isValid() || (time.hour() === 0 && time.minute() === 0 && time.second() === 0)) {
+                        logger.debug(`No time specified, setting defaults`);
+                        time = weekend ? 
+                            moment(process.env.WEEKEND_PICKUP_TIME, ['h:m a', 'H:m']) : 
+                            moment(process.env.WEEKDAY_PICKUP_TIME, ['h:m a', 'H:m']);
+                    }
+                    logger.debug(`Pickup time: ${time.format('h:m a')}`);
                     // // This is after-school pickup - clean up bad data in the spreadsheet to make the pickup time PM)
                     // if(!weekend && time.get('hour') < 12) {
                     //     time = time.set({hour: time.get('hour') + 12});
@@ -97,6 +104,7 @@ export class GSheetReader {
 
                     // Set the time on the date, since they are separate columns now
                     date = date.set({hour: time.get('hour'), minute: time.get('minute')});
+                    logger.debug(`Start date w/time: ${date}`);
 
                     // Set the location on weekdays vs weekend
                     const location = row[process.env.ALTERNATE_PICKUP_ADDRESS_COLUMN] || weekend ?
