@@ -1,0 +1,5 @@
+{
+    "global": {
+        "gsheetsCredentials": "GSHEETS_CREDENTIALS"
+    }
+}
