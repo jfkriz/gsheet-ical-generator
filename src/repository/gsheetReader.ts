@@ -4,23 +4,29 @@ import { GoogleAuth } from 'google-auth-library';
 import { logger } from '../util';
 
 import moment from 'moment';
+import { Global, Sheet } from '../models/config';
 
 export class GSheetReader {
     auth: GoogleAuth;
     authClient: any = null;
     client: sheets_v4.Sheets = null;
+    globalConfig: Global;
+    sheetConfig: Sheet;
 
-    constructor() {
+    constructor(globalConfig: Global, sheetConfig: Sheet) {
+        this.globalConfig = globalConfig;
+        this.sheetConfig = sheetConfig;
+
         logger.debug(`Reading credentials from process.env.GSHEETS_CREDENTIALS`);
-        const credentials = JSON.parse(process.env.GSHEETS_CREDENTIALS);
+        const credentials = JSON.parse(this.globalConfig.gsheetsCredentials);
         logger.debug(`Read credentials from process.env.GSHEETS_CREDENTIALS`);
         const scopes = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 
         this.auth = new GoogleAuth({
             credentials: credentials,
             scopes: scopes
-        });
-    }
+        });        
+    }    
 
     async readEventsFromSheet(userAgent?: string, driverFilter?: string): Promise<Array<ICalEventData>> {
         if (this.authClient == null) {
@@ -39,8 +45,8 @@ export class GSheetReader {
         logger.debug('Reading range from sheet');
         const res = await this.client.spreadsheets.values.get({
             auth: this.authClient,
-            spreadsheetId: process.env.GSHEETS_SHEET_ID,
-            range: process.env.GSHEETS_DATA_RANGE
+            spreadsheetId: this.sheetConfig.sheetId,
+            range: this.sheetConfig.dataRange
         });
 
         if (res.status != 200) {
@@ -48,10 +54,10 @@ export class GSheetReader {
             throw (res.statusText);
         }
 
-        let spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${process.env.GSHEETS_SHEET_ID}/edit`
+        let spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${this.sheetConfig.sheetId}/edit`
         const sheet = await this.client.spreadsheets.get({
             auth: this.authClient,
-            spreadsheetId: process.env.GSHEETS_SHEET_ID
+            spreadsheetId: this.sheetConfig.sheetId
         });
         if (sheet.status == 200) {
             logger.debug('Setting spreadsheet URL from sheet data');
@@ -64,14 +70,14 @@ export class GSheetReader {
             logger.warn('No rows read from sheet');
             return new Array<ICalEventData>();
         } else {
-            const riderStartColumn = Number.parseInt(process.env.FIRST_RIDER_COLUMN);
-            const riderEndColumn = riderStartColumn + Number.parseInt(process.env.RIDER_COUNT);
+            const riderStartColumn = this.sheetConfig.columns.firstRider;
+            const riderEndColumn = riderStartColumn + this.sheetConfig.columns.numRiders;
             const riderNames = rows[0].slice(riderStartColumn, riderEndColumn);
             logger.debug(`Riders: ${riderNames.join(",")}`);
             return rows.slice(1)
                 .filter(row => {
-                    let numRiders = row[process.env.NUM_RIDERS_COLUMN] ? row[process.env.NUM_RIDERS_COLUMN] : 0;
-                    let notes = row[process.env.NOTES_COLUMN] ? row[process.env.NOTES_COLUMN].toLowerCase().replace(' ', '') : '';
+                    let numRiders = row[this.sheetConfig.columns.numRiders] ? row[this.sheetConfig.columns.numRiders] : 0;
+                    let notes = row[this.sheetConfig.columns.notes] ? row[this.sheetConfig.columns.notes].toLowerCase().replace(' ', '') : '';
                     return numRiders 
                         && numRiders > 0 
                         && (!notes.includes('noschool') || !notes.includes('noclasses') || !notes.includes('weekend') || !notes.includes('break')); 
@@ -80,22 +86,22 @@ export class GSheetReader {
                     logger.debug(`${row.join(",")}`);
 
                     // Get the start date of the event - may or may not have time, moment will handle this
-                    let date = moment(row[process.env.DATE_COLUMN], ['ddd, MM/DD/YYYY, hh:mmA']);
+                    let date = moment(row[this.sheetConfig.columns.date], ['ddd, MM/DD/YYYY, hh:mmA']);
                     logger.debug(`Start date: ${date}`);
                     
                     // Determine if the date is a weekend or not
                     const day = date.format('dddd').toLowerCase();
                     const weekend = day == 'saturday' || day == 'sunday';
 
-                    let time = moment(row[process.env.TIME_COLUMN], 'hh:mmA');
+                    let time = this.sheetConfig.columns.time && moment(row[this.sheetConfig.columns.time], 'hh:mmA');
                     logger.debug(`Time in sheet: ${time}`);
                     if (!time || !time.isValid() || (time.hour() === 0 && time.minute() === 0 && time.second() === 0)) {
                         logger.debug(`No time specified, setting defaults`);
                         time = weekend ? 
-                            moment(process.env.WEEKEND_PICKUP_TIME, ['h:m a', 'H:m']) : 
-                            moment(process.env.WEEKDAY_PICKUP_TIME, ['h:m a', 'H:m']);
+                            moment(this.sheetConfig.defaults.weekendPickupTime, ['h:m a', 'H:m']) : 
+                            moment(this.sheetConfig.defaults.weekdayPickupTime, ['h:m a', 'H:m']);
                     }
-                    logger.debug(`Pickup time: ${time.format('h:m a')}`);
+                    logger.debug(`Pickup time: ${time.format('hh:mm a')}`);
                     // // This is after-school pickup - clean up bad data in the spreadsheet to make the pickup time PM)
                     // if(!weekend && time.get('hour') < 12) {
                     //     time = time.set({hour: time.get('hour') + 12});
@@ -107,13 +113,14 @@ export class GSheetReader {
                     logger.debug(`Start date w/time: ${date}`);
 
                     // Set the location on weekdays vs weekend
-                    const location = row[process.env.ALTERNATE_PICKUP_ADDRESS_COLUMN] || weekend ?
-                        process.env.WEEKEND_PICKUP_LOCATION : process.env.WEEKDAY_PICKUP_LOCATION;
+                    const location = (this.sheetConfig.columns.alternatePickupAddress ? 
+                        row[this.sheetConfig.columns.alternatePickupAddress] : null) || weekend ?
+                        this.sheetConfig.defaults.weekendPickupLocation : this.sheetConfig.defaults.weekdayPickupLocation;
                     logger.debug(`Location: ${location}`);
 
-                    const driver = row[process.env.DRIVER_COLUMN] || 'NO DRIVER';
-                    const numRiders = row[process.env.NUM_RIDERS_COLUMN];
-                    const notes = row[process.env.NOTES_COLUMN] || undefined;
+                    const driver = row[this.sheetConfig.columns.driver] || 'NO DRIVER';
+                    const numRiders = row[this.sheetConfig.columns.numRiders];
+                    const notes = row[this.sheetConfig.columns.notes] || undefined;
                     const eventId = date.format('YYYYMMDDHHmmss');
 
                     // Get an array of all the riders
@@ -151,7 +158,7 @@ export class GSheetReader {
                     altDescription = `${altDescription}<p><a href="${spreadsheetUrl}" target="_blank" title="${spreadsheetUrl}">Spreadsheet Link</a></p></BODY></HTML>`;
 
                     return {
-                        summary: `${driver}: St. Xavier Carpool Pickup`,
+                        summary: `${driver}: ${this.sheetConfig.eventSubject}`,
                         description: userAgent == "Google-Calendar-Importer" ? altDescription : description,
                         start: date,
                         id: eventId,

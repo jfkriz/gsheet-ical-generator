@@ -16,7 +16,7 @@ RUN npm install
 # RUN npm ci --only=production
 
 # Bundle app source
-COPY ./dist .env* ./
+COPY ./dist .env* ./config ./views ./
 
 # I want dates in logs to show up in my timezone...
 ENV TZ=America/New_York

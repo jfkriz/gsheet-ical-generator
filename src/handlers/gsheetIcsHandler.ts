@@ -1,8 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../util';
 import { IcalGenerator } from '../service';
+import { Global, Sheet } from '../models/config';
 
 export class GsheetIcsHandler {
+    globalConfig: Global;
+    sheetConfig: Sheet;
+
+    constructor(globalConfig: Global, sheetConfig: Sheet) {
+        this.globalConfig = globalConfig;
+        this.sheetConfig = sheetConfig;
+    }
+
     async handle(
         req: Request, 
         res: Response, 
@@ -17,8 +26,8 @@ export class GsheetIcsHandler {
         res
             .status(200)
             .contentType('text/calendar')
-            .header('Content-Disposition', 'attachment;filename=stx-calendar.ics')
-            .send(await new IcalGenerator().generate(req.headers["user-agent"], driverFilter));
+            .header('Content-Disposition', `attachment;filename=${this.sheetConfig.filename}`)
+            .send(await new IcalGenerator(this.globalConfig, this.sheetConfig).generate(req.headers["user-agent"], driverFilter));
         next();
     }
 }

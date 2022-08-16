@@ -5,18 +5,22 @@
   "main": "dist/app.js",
   "scripts": {
     "test": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine.json",
+    "testWin": "ts-node node_modules\\jasmine\\bin\\jasmine --config=jasmine.json",
     "ci-test": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine-ci.json",
     "start": "./node_modules/.bin/tsc && node dist/app.js",
     "startWin": "node_modules\\.bin\\tsc && node dist\\app.js",
-    "build": "./node_modules/.bin/tsc"
+    "build": "./node_modules/.bin/tsc",
+    "buildWin": "node_modules\\.bin\\tsc"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@touch4it/ical-timezones": "^1.8.1",
     "app-root-path": "^3.0.0",
+    "config": "^3.3.7",
     "dayjs": "^1.10.6",
     "dotenv": "^10.0.0",
+    "ejs": "^3.1.8",
     "express": "^4.17.1",
     "express-winston": "^4.1.0",
     "googleapis": "^84.0.0",
@@ -25,6 +29,7 @@
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
     "rrule": "^2.6.8",
+    "serve-favicon": "^2.5.0",
     "winston": "^3.3.3"
   },
   "devDependencies": {

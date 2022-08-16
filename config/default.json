@@ -1,0 +1,57 @@
+{
+    "global": {
+        "gsheetsCredentials": ""
+    },
+    "sheets": [
+        {
+            "path": "/2022/cross-country-carpool.ics",
+            "filename": "2022-cross-country-carpool.ics",
+            "sheetId": "1XYpwO5XCFEiQBJUmn2ofn5vAWUnYaVmEyqpLadK3mkw",
+            "eventSubject": "Cross Country Carpool Pickup",
+            "calendarName": "St. Xavier Cross Country Carpool 2022-2023",
+            "calendarDescription": "St. Xavier Cross Country Carpool 2022-2023 - Riders and Drivers",
+            "dataRange": "Carpool!A12:J400",
+            "riderCount": 4,
+            "defaults": {
+                "weekdayPickupTime": "17:00",
+                "weekdayPickupLocation": "St. Xavier High School, 600 W North Bend Rd, Cincinnati, OH 45224",
+                "weekendPickupTime": "07:25",
+                "weekendPickupLocation": "Walgreens, 10529 Loveland Madeira Rd, Loveland, OH 45140"
+            },
+            "columns": {
+                "date": 0,
+                "time": 1,
+                "firstRider": 2,
+                "numRiders": 6,
+                "driver": 7,
+                "notes": 8,
+                "alternatePickupAddress": 9
+            }
+        },
+        {
+            "path": "/2022/morning-carpool.ics",
+            "filename": "2022-morning-carpool.ics",
+            "sheetId": "1PGk-iK-8ZoTbFI7n1Nr22eufQ46OW5N9Frve1GmC_SA",
+            "eventSubject": "Morning Carpool Pickup",
+            "calendarName": "St. Xavier Morning Carpool 2022-2023",
+            "calendarDescription": "St. Xavier Morning Carpool 2022-2023 - Riders and Drivers",
+            "dataRange": "Carpool!A17:I302",
+            "riderCount": 4,
+            "defaults": {
+                "weekdayPickupTime": "07:00",
+                "weekdayPickupLocation": "Kroger, 6388 Branch Hill-Guinea Pike, Loveland, OH 45140",
+                "weekendPickupTime": "07:00",
+                "weekendPickupLocation": "Kroger, 6388 Branch Hill-Guinea Pike, Loveland, OH 45140"
+            },
+            "columns": {
+                "date": 0,
+                "time": null,
+                "firstRider": 1,
+                "numRiders": 5,
+                "driver": 6,
+                "notes": 7,
+                "alternatePickupAddress": null
+            }
+        }        
+    ]
+}
