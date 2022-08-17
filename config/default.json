@@ -10,7 +10,7 @@
             "eventSubject": "Cross Country Carpool Pickup",
             "calendarName": "St. Xavier Cross Country Carpool 2022-2023",
             "calendarDescription": "St. Xavier Cross Country Carpool 2022-2023 - Riders and Drivers",
-            "dataRange": "Carpool!A12:J400",
+            "dataRange": "Carpool!A11:J400",
             "riderCount": 4,
             "defaults": {
                 "weekdayPickupTime": "17:00",
