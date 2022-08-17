@@ -1,42 +1,56 @@
 <html lang="en">
 <head>
   <title>St. Xavier High School - Carpool Calendars</title>
-  <script src="https://kit.fontawesome.com/b1df1a0fe6.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">  
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
   <script type='text/javascript'>
+    const alert = (message, type) => {
+      const wrapper = document.createElement('div')
+      wrapper.innerHTML = [
+        `<div class="alert alert-${type} alert-dismissible show fade" role="alert" id="copiedHrefAlert">`,
+        `   <div>${message}</div>`,
+        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+        '</div>'
+      ].join('')
+
+      document.getElementById('copiedHrefAlertPlaceholder').append(wrapper);
+      const copiedAlert = bootstrap.Alert.getOrCreateInstance('#copiedHrefAlert');
+
+      window.setTimeout(() => {
+        copiedAlert.close();
+      }, 5000);
+    }
+
     window.addEventListener('load', () => {
       document.querySelectorAll('.cal-link-copy').forEach(link => {
         link.addEventListener('click', (event) => {
-          copyLink(event);
+          event.preventDefault();
+          // Copy the href to the clipboard
+          navigator.clipboard.writeText(event.target.href);
+
+          // Notify the user that it was copied
+          alert('Calendar link copied to clipboard!', 'success');
         });
       });
+
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+      [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     });
 
-    function copyLink(event) {
-        let anchor = document.getElementById(event.target.getAttribute('data-cal-id'));
-
-        /* Copy the text inside the text field */
-        navigator.clipboard.writeText(anchor.href);
-
-        bootstrap.Toast.getOrCreateInstance(document.getElementById('copyToast')).show();
-      }
   </script>
+  <style>
+    a.unlink {
+      text-decoration: none;
+      color: inherit;
+    }
+  </style>
 </head>
 <body class="container">
 <main>
-<div class="toast-container top-50 start-50 translate-middle">
-  <div class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true" id="copyToast">
-    <div class="d-flex">
-      <div class="toast-body">
-        Calendar link copied to clipboard!
-      </div>
-      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-    </div>
-  </div>
-</div>
+  <div id="copiedHrefAlertPlaceholder"></div>
 
   <h2>St. Xavier High School - Carpool Calendars</h2>
 
@@ -44,9 +58,15 @@
     <h3>School Year <%=year%> - <%=year + 1%></h3>
     <ul>
       <% calendars.forEach(cal => { %>
-        <li><a href='/<%=year%>/<%=cal.path%>' target='_blank' id='<%=year%>-<%=cal.path%>'><%=cal.name%></a>&nbsp;
-          <i class="fa-regular fa-clipboard cal-link-copy" style="cursor: pointer;" data-cal-id='<%=year%>-<%=cal.path%>'></i> 
-          <a class="fa-brands fa-google-drive" style="text-decoration: none; color: inherit;" href="<%=cal.sheet%>" target="_blank"></a> (<%=cal.description%>)
+        <li>
+          <a href='/<%=year%>/<%=cal.path%>' target='_blank'><%=cal.name%></a>
+          &nbsp;
+          <a class="bi bi-clipboard cal-link-copy unlink" href='/<%=year%>/<%=cal.path%>' data-bs-toggle="tooltip" data-bs-title="Copy ICS link to clipboard"></a> 
+          &nbsp;
+          <a class="bi bi-file-earmark-spreadsheet unlink" href="<%=cal.sheet%>" target="_blank" data-bs-toggle="tooltip" data-bs-title="Go to Google Sheet"></a>
+          <ul>
+            <li><%=cal.description%></li>
+          </ul>
         </li>
       <% }); %>
     </ul>
@@ -54,14 +74,14 @@
 
     <h2>Usage</h2>
     <p>
-    To subscribe to any of the above calendars, click the <i class='fa-regular fa-clipboard'></i> icon next to the
+    To subscribe to any of the above calendars, click the <i class='bi bi-clipboard'></i> icon next to the
     calendar name to copy the ICS URL for the calendar to your clipboard,
-    then use that in your favorite calendar program to subscribe. You can also link to the Google sheet with the <i class="fa-brands fa-google-drive"></i> icon next to each calendar.
+    then use that in your favorite calendar program to subscribe. You can also link to the Google sheet with the <i class="bi bi-file-earmark-spreadsheet"></i> icon next to each calendar.
     </p>
     <p>
     Here are some instructions for subscribing to an ICS calendar with some popular calendar apps:
     <ul>
-      <li><a href='https://support.google.com/calendar/answer/37100?hl=en&co=GENIE.Platform%3DDesktop' target='_blank'>Google Calendar</a> - instructions under "Use
+      <li><a href='https://support.google.com/calendar/answer/37100?hl=en&co=GENIE.Platform%3DDesktop#:~:text=Use%20a%20link%20to%20add%20a%20public%20calendar' target='_blank'>Google Calendar</a> - instructions under "Use
       a link to add a public calendar"</li>
       <li><a href='https://support.apple.com/guide/iphone/use-multiple-calendars-iph3d1110d4/ios#:~:text=Go%20to%20Settings%20%3E%20Calendar%20%3E%20Accounts%20%3E%20Add%20Account%20%3E%20Other,any%20other%20required%20server%20information.' target='_blank'>iOS (iPad, iPhone, Macbook, etc)</a> - instructions under "Subscribe to a Calendar"</li>
       <li><a href='https://www.cozi.com/how-to-add-an-ical-feed-to-cozi/' target='_blank'>Cozi</a></li>
