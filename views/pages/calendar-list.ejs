@@ -64,8 +64,9 @@
           <a class="bi bi-clipboard cal-link-copy unlink" href='/<%=year%>/<%=cal.path%>' data-bs-toggle="tooltip" data-bs-title="Copy ICS link to clipboard"></a> 
           &nbsp;
           <a class="bi bi-file-earmark-spreadsheet unlink" href="<%=cal.sheet%>" target="_blank" data-bs-toggle="tooltip" data-bs-title="Go to Google Sheet"></a>
-          &nbsp;
-          (<%=cal.description%>)
+          <ul>
+            <li><%=cal.description%></li>
+          </ul>
         </li>
       <% }); %>
     </ul>
@@ -80,7 +81,7 @@
     <p>
     Here are some instructions for subscribing to an ICS calendar with some popular calendar apps:
     <ul>
-      <li><a href='https://support.google.com/calendar/answer/37100?hl=en&co=GENIE.Platform%3DDesktop' target='_blank'>Google Calendar</a> - instructions under "Use
+      <li><a href='https://support.google.com/calendar/answer/37100?hl=en&co=GENIE.Platform%3DDesktop#:~:text=Use%20a%20link%20to%20add%20a%20public%20calendar' target='_blank'>Google Calendar</a> - instructions under "Use
       a link to add a public calendar"</li>
       <li><a href='https://support.apple.com/guide/iphone/use-multiple-calendars-iph3d1110d4/ios#:~:text=Go%20to%20Settings%20%3E%20Calendar%20%3E%20Accounts%20%3E%20Add%20Account%20%3E%20Other,any%20other%20required%20server%20information.' target='_blank'>iOS (iPad, iPhone, Macbook, etc)</a> - instructions under "Subscribe to a Calendar"</li>
       <li><a href='https://www.cozi.com/how-to-add-an-ical-feed-to-cozi/' target='_blank'>Cozi</a></li>
