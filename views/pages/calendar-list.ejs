@@ -44,9 +44,9 @@
     <h3>School Year <%=year%> - <%=year + 1%></h3>
     <ul>
       <% calendars.forEach(cal => { %>
-        <li><a href='/<%=year%>/<%=cal.path%>' target='_new' id='<%=year%>-<%=cal.path%>'><%=cal.name%></a>&nbsp;
+        <li><a href='/<%=year%>/<%=cal.path%>' target='_blank' id='<%=year%>-<%=cal.path%>'><%=cal.name%></a>&nbsp;
           <i class="fa-regular fa-clipboard cal-link-copy" style="cursor: pointer;" data-cal-id='<%=year%>-<%=cal.path%>'></i> 
-          <a class="fa-brands fa-google-drive" style="text-decoration: none; color: inherit;" href="<%=cal.sheet%>" target="_new"></a> (<%=cal.description%>)
+          <a class="fa-brands fa-google-drive" style="text-decoration: none; color: inherit;" href="<%=cal.sheet%>" target="_blank"></a> (<%=cal.description%>)
         </li>
       <% }); %>
     </ul>
@@ -61,10 +61,10 @@
     <p>
     Here are some instructions for subscribing to an ICS calendar with some popular calendar apps:
     <ul>
-      <li><a href='https://support.google.com/calendar/answer/37100?hl=en&co=GENIE.Platform%3DDesktop' target='_new'>Google Calendar</a> - instructions under "Use
+      <li><a href='https://support.google.com/calendar/answer/37100?hl=en&co=GENIE.Platform%3DDesktop' target='_blank'>Google Calendar</a> - instructions under "Use
       a link to add a public calendar"</li>
-      <li><a href='https://support.apple.com/guide/iphone/use-multiple-calendars-iph3d1110d4/ios#:~:text=Go%20to%20Settings%20%3E%20Calendar%20%3E%20Accounts%20%3E%20Add%20Account%20%3E%20Other,any%20other%20required%20server%20information.' target='_new'>iOS (iPad, iPhone, Macbook, etc)</a> - instructions under "Subscribe to a Calendar"</li>
-      <li><a href='https://www.cozi.com/how-to-add-an-ical-feed-to-cozi/' target='_new'>Cozi</a></li>
+      <li><a href='https://support.apple.com/guide/iphone/use-multiple-calendars-iph3d1110d4/ios#:~:text=Go%20to%20Settings%20%3E%20Calendar%20%3E%20Accounts%20%3E%20Add%20Account%20%3E%20Other,any%20other%20required%20server%20information.' target='_blank'>iOS (iPad, iPhone, Macbook, etc)</a> - instructions under "Subscribe to a Calendar"</li>
+      <li><a href='https://www.cozi.com/how-to-add-an-ical-feed-to-cozi/' target='_blank'>Cozi</a></li>
     </ul>
     </p>
     <p>
