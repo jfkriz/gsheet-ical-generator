@@ -44,7 +44,7 @@
     <h3>School Year <%=year%> - <%=year + 1%></h3>
     <ul>
       <% calendars.forEach(cal => { %>
-        <li><a href='./<%=year%>/<%=cal.path%>' target='_new' id='<%=year%>-<%=cal.path%>'><%=cal.name%></a>&nbsp;
+        <li><a href='/<%=year%>/<%=cal.path%>' target='_new' id='<%=year%>-<%=cal.path%>'><%=cal.name%></a>&nbsp;
           <i class="fa-regular fa-clipboard cal-link-copy" style="cursor: pointer;" data-cal-id='<%=year%>-<%=cal.path%>'></i> 
           <a class="fa-brands fa-google-drive" style="text-decoration: none; color: inherit;" href="<%=cal.sheet%>" target="_new"></a> (<%=cal.description%>)
         </li>
