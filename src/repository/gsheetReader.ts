@@ -71,7 +71,7 @@ export class GSheetReader {
             return new Array<ICalEventData>();
         } else {
             const riderStartColumn = this.sheetConfig.columns.firstRider;
-            const riderEndColumn = this.sheetConfig.columns.numRiders - riderStartColumn;
+            const riderEndColumn = riderStartColumn + this.sheetConfig.riderCount;
             const riderNames = rows[0].slice(riderStartColumn, riderEndColumn);
             logger.debug(`Riders: ${riderNames.join(",")}`);
             return rows.slice(1)

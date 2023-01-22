@@ -35,7 +35,7 @@
             "eventSubject": "Morning Carpool Pickup",
             "calendarName": "St. Xavier Morning Carpool 2022-2023",
             "calendarDescription": "St. Xavier Morning Carpool 2022-2023 - Riders and Drivers",
-            "dataRange": "Carpool!A17:I302",
+            "dataRange": "Carpool!A17:I500",
             "riderCount": 4,
             "defaults": {
                 "weekdayPickupTime": "07:00",
